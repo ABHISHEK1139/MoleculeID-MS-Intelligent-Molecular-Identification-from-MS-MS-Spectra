@@ -1,0 +1,58 @@
+# Stage 5 — Hard-Negative Isomer Reranking
+# Experiment 5a: Cross-Modal Reranker with Multi-Tier Curriculum and Physics Fusion
+#
+# Run with:
+#   python scripts/train_stage5.py --config configs/stage05/exp5a.yaml --exp-name exp5a
+#
+# Results saved to: artifacts/stage05/exp5a/
+
+experiment:
+  name: "exp5a"
+  stage: "5"
+  description: "Hard-negative isomer reranking with 4-tier curriculum and physics consistency fusion"
+
+data:
+  train_path: "dataset/train.parquet"
+  subset_size: 10000          # 10,000 molecule pool (9,000 train, 1,000 held-out val)
+  val_frac: 0.10              # Disjoint validation fraction
+  seed: 42
+
+models:
+  spectrum_checkpoint: "artifacts/stage02/exp2a/checkpoints/best.pt"
+  gnn_checkpoint: "artifacts/stage03/exp3a/checkpoints/best.pt"
+  freeze_spectrum_encoder: true
+  fine_tune_gnn: true
+  embed_dim: 256              # 256-D cross-modal latent space
+  physics_dim: 4              # [ppm_error_norm, tier_weight, prec_mz_norm, formula_match]
+  reranker_hidden_dim: 256
+  dropout: 0.10
+
+training:
+  epochs: 15
+  batch_size: 64
+  lr_gnn: 5.0e-5              # Fine-tuning rate for pretrained GINE backbone
+  lr_reranker: 5.0e-4         # Learning rate for CrossModalReranker interaction head
+  weight_decay: 0.01
+  margin: 0.20                # Pairwise margin ranking parameter
+  grad_clip: 1.0
+  curriculum:
+    phase1:
+      min_epoch: 1
+      max_epoch: 4
+      probs: [0.40, 0.30, 0.30]  # [p_random, p_isobar, p_isomer]
+      scaffold_bias: 0.20
+    phase2:
+      min_epoch: 5
+      max_epoch: 9
+      probs: [0.20, 0.30, 0.50]
+      scaffold_bias: 0.35
+    phase3:
+      min_epoch: 10
+      max_epoch: 15
+      probs: [0.10, 0.20, 0.70]
+      scaffold_bias: 0.50
+
+evaluation:
+  eval_every: 1               # Track validation loss and isomer discrimination every epoch
+  n_protocol_c_queries: 200   # Held-out queries for candidate retrieval
+  top_k: 25

@@ -1,0 +1,39 @@
+# Stage 3 — Cross-Modal Spectrum ↔ Molecule GNN
+# Experiment 3a: 4-layer GINE with frozen Stage 2 SpectrumEncoder (exp2a)
+#
+# Run with:
+#   python scripts/train_stage3.py --config configs/stage03/exp3a.yaml --exp-name exp3a
+#
+# Results saved to: artifacts/stage03/exp3a/
+
+experiment:
+  name: "exp3a"
+  stage: "3"
+  description: "Cross-modal Spectrum ↔ Molecule GNN with frozen Stage 2 SpectrumEncoder"
+
+data:
+  train_path: "dataset/train.parquet"
+  subset_size: 10000          # Number of unique molecules to load
+  val_frac: 0.10              # Strict molecule-disjoint validation fraction
+  seed: 42
+
+models:
+  spectrum_checkpoint: "artifacts/stage02/exp2a/checkpoints/best.pt"
+  freeze_spectrum_encoder: true
+  gnn_hidden_dim: 128         # Hidden channels in GINEConv layers
+  gnn_n_layers: 4             # Number of residual GINE blocks
+  embed_dim: 256              # Shared cross-modal embedding dimension
+  dropout: 0.10               # GNN dropout probability
+
+training:
+  epochs: 20
+  batch_size: 128             # In-batch cross-modal negatives: 127
+  lr: 1.0e-4                  # AdamW learning rate
+  weight_decay: 0.01
+  temperature: 0.07           # InfoNCE temperature
+  grad_clip: 1.0
+
+evaluation:
+  eval_every: 5               # Evaluate in-batch and Protocol C every N epochs
+  n_protocol_c_queries: 200   # Number of held-out zero-reference queries
+  top_k: 25                   # Evaluation rank depth MRR@25

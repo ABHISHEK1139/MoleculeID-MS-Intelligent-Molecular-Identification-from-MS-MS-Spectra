@@ -1,0 +1,40 @@
+# Stage 4 — Physics & Formula Candidate Generation
+# Experiment 4a: Two-Tier Mass Gating & Formula Pruning with Stage 3 GNN
+#
+# Run with:
+#   python scripts/evaluate_stage4.py --config configs/stage04/exp4a.yaml --exp-name exp4a
+#
+# Results saved to: artifacts/stage04/exp4a/
+
+experiment:
+  name: "exp4a"
+  stage: "4"
+  description: "Two-tier mass gating (20/50 ppm + isotope) with Stage 3 cross-modal GNN"
+
+physics:
+  ppm_primary: 20.0           # Tier 1 high-trust window
+  ppm_fallback: 50.0          # Tier 2 fallback window
+  include_isotope: true       # Tier 3 M+-1.00335 Da isotope correction
+  tier1_weight: 1.00
+  tier2_weight: 0.90
+  tier3_weight: 0.85
+
+models:
+  spectrum_checkpoint: "artifacts/stage02/exp2a/checkpoints/best.pt"
+  molecule_checkpoint: "artifacts/stage03/exp3a/checkpoints/best.pt"
+  embed_dim: 256
+  gnn_hidden_dim: 128
+  gnn_n_layers: 4
+
+data:
+  train_path: "dataset/train.parquet"
+  subset_size: 10000          # 10,000 molecules (9,000 train, 1,000 val)
+  val_frac: 0.10
+  seed: 42
+
+evaluation:
+  n_queries: 200              # Held-out zero-reference queries
+  top_k: 25                   # Retrieval depth
+  candidate_pool_scales:
+    - 1000                    # Benchmark A: 1,000-candidate pool (direct Stage 3 comparison)
+    - 10000                   # Benchmark B: 10,000-candidate pool (larger isomer-dense pool)

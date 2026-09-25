@@ -1,0 +1,54 @@
+# Stage 2 — Contrastive Spectrum Encoder
+# Experiment 2a: baseline 1D-CNN with default hyperparameters
+#
+# Run with:
+#   python scripts/train_stage2.py --exp-name exp2a
+#
+# Results saved to: artifacts/stage02/exp2a/
+
+experiment:
+  name: "exp2a"
+  stage: "2"
+  description: "Baseline 1D-CNN ResNet with InfoNCE contrastive loss"
+
+data:
+  train_path: "dataset/train.parquet"
+  subset_size: 10000          # Number of molecules to use (null = all ~275K)
+  min_spectra_per_mol: 2      # Only molecules with at least 2 spectra form positive pairs
+  val_frac: 0.10              # Fraction of molecules held out for validation
+  seed: 42
+
+augmentation:
+  drop_prob: 0.10             # Peak dropout probability
+  jitter_sigma: 0.05          # Intensity jitter Gaussian sigma
+  shift_ppm: 10.0             # m/z shift magnitude (ppm)
+
+model:
+  embed_dim: 256              # Output embedding dimension (L2-normalized)
+  hidden_channels: 128        # Conv channels throughout residual blocks
+  n_blocks: 4                 # Number of residual blocks (dilations: 1,2,4,8)
+  dropout: 0.10               # Dropout rate after global pooling
+
+training:
+  epochs: 20
+  batch_size: 256             # Batch size (gives 255 in-batch negatives for InfoNCE)
+  lr: 1.0e-4                  # AdamW learning rate
+  weight_decay: 0.01
+  temperature: 0.07           # InfoNCE temperature (SimCLR default)
+  grad_clip: 1.0              # Gradient clipping max norm
+  scheduler: "cosine"         # CosineAnnealingLR over all epochs
+
+evaluation:
+  eval_every: 5               # Compute retrieval MRR every N epochs
+  n_queries: 500              # Number of query molecules for retrieval eval
+  top_k: 25                   # MRR@k
+
+runtime:
+  num_workers: 0              # DataLoader workers (0 = main process, avoids rng fork issues)
+  device: "cuda"              # "cuda" or "cpu"
+
+# Hardware budget (RTX 3050, 4GB VRAM):
+#   Input: 1483 x 256 x 4B = 1.5 MB per batch
+#   Model: ~2M params x 4B = 8 MB
+#   Activations: ~100 MB at batch 256
+#   ~3 min/epoch for 10K molecules

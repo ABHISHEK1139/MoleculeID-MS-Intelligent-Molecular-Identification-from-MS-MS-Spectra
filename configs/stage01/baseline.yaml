@@ -1,0 +1,81 @@
+# Stage 0/1 — Classical Spectral Retrieval Baseline
+#
+# This config documents the settings used for the baseline run.
+# Stage 0/1 doesn't use YAML-driven configs yet (CLI args suffice),
+# but we freeze the settings here for reproducibility.
+
+experiment:
+  name: "stage01_baseline"
+  stage: "0-1"
+  description: "Classical spectral retrieval with 6 preprocessing ablations"
+
+data:
+  train_path: "dataset/train.parquet"
+  test_path: "dataset/test.parquet"
+  sample_submission: "dataset/sample_submission.csv"
+
+evaluation:
+  n_val_molecules: 2000
+  split_seed: 42
+  top_k: 25
+  ppm_tolerance: 20.0
+
+experiments:
+  - key: "1A"
+    name: "raw_normalized"
+    min_rel: 0.0
+    remove_precursor: false
+    deisotope: false
+    max_peaks: 100
+    mass_filter: false
+    modified_cosine: false
+
+  - key: "1B"
+    name: "noise_filter"
+    min_rel: 0.01
+    remove_precursor: false
+    deisotope: false
+    max_peaks: 100
+    mass_filter: false
+    modified_cosine: false
+
+  - key: "1C"
+    name: "noise_plus_precursor"
+    min_rel: 0.01
+    remove_precursor: true
+    deisotope: false
+    max_peaks: 100
+    mass_filter: false
+    modified_cosine: false
+
+  - key: "1D"
+    name: "noise_precursor_deisotope"
+    min_rel: 0.01
+    remove_precursor: true
+    deisotope: true
+    max_peaks: 100
+    mass_filter: false
+    modified_cosine: false
+
+  - key: "1E"
+    name: "deiso_mass_filter"
+    min_rel: 0.01
+    remove_precursor: true
+    deisotope: true
+    max_peaks: 100
+    mass_filter: true
+    modified_cosine: false
+
+  - key: "1F"
+    name: "deiso_mass_filter_modified"
+    min_rel: 0.01
+    remove_precursor: true
+    deisotope: true
+    max_peaks: 100
+    mass_filter: true
+    modified_cosine: true
+
+runtime:
+  batch_size: 256
+  workers: 4
+  max_chunks: null  # null = all row groups

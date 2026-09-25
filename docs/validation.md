@@ -92,16 +92,37 @@ To ensure models generalize beyond local benchmarks, all architectures must unde
                                     ▼
 ┌────────────────────────────────────────────────────────────────────────┐
 │                        VERIFICATION LEVEL 3                            │
-│  External GNPS Stress Test (Zero Reference Overlap)                    │
-│  - 50 fully unseen natural products from external GNPS repositories   │
-│  - Complete zero overlap with any training, fine-tuning, or ref data   │
+│  External Zero-Training-Overlap Stress Test (50 GNPS Molecules)        │
+│  - Evaluates generalization to unseen chemistry within candidate catalog│
+│  - 0% overlap with any training spectrum, scaffold, or reference data   │
+│  - Tests cross-instrument transfer (Q-Exactive Orbitrap vs Q-TOF)      │
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Protocol Details:
 1. **Level 1 (InChIKey14 OOF):** Evaluates overall candidate retrieval and direct matching fidelity across 5 stratified folds.
 2. **Level 2 (Murcko Scaffold Holdout):** Evaluates analog propagation and neural fingerprint inference when the entire core scaffold has never been seen in training.
-3. **Level 3 (External GNPS Stress Test):** 50 authentic natural products curated from the Global Natural Products Social Molecular Networking (GNPS) repository with zero training overlap, verifying cross-instrument transfer (e.g., Q-Exactive Orbitrap vs. Agilent Q-TOF).
+3. **Level 3 (External Zero-Training-Overlap Stress Test):** 50 authentic natural products curated from GNPS with zero training overlap. Note that this evaluates cross-dataset generalization of retrieval and analog propagation for molecules present in the candidate catalog; it is **not** unconstrained de novo identification.
+
+---
+
+## 5. Empirical Candidate Universe Ceiling (Phase B Measurement)
+
+A central question in untargeted metabolomics is determining the actual boundary between **candidate retrieval** (molecule exists in reference databases) and **de novo identification** (molecule is completely absent from all catalogs).
+
+Rather than relying on unverified estimates (e.g. theoretical 35% ceilings), we empirically evaluated the entire 776,699-structure candidate catalog across 26,773 experimental spectra from GNPS:
+
+| Evaluation Dimension | Metric Tested | GNPS Experimental Cohort (26,773 Spectra) |
+| :--- | :--- | :--- |
+| **Catalog Presence** | True InChIKey14 exists in 776k catalog | **96.34%** (25,794 / 26,773) |
+| **True De Novo Space** | Molecule truly absent from candidate catalog | **3.66%** (979 / 26,773) |
+| **Precursor Mass Recall** | Calculated neutral mass matches within $\pm 100$ ppm | **47.20%** (12,636 / 26,773) |
+| **End-to-End Structure Recall**| Candidate engine retrieves correct structure | **47.02%** (12,590 / 26,773) |
+| **Retrieval Conditional Recall** | Retrieval recall given presence & mass match | **99.64%** (12,590 / 12,636) |
+
+### Key Scientific Insights:
+1. **The Real De Novo Boundary:** In curated natural product repositories, **only 3.66% of compounds are completely absent from the unified candidate catalog** (COCONUT 2.0 + PubChem + ChEBI). Thus, the candidate retrieval ceiling is ~96.3%, not 65%.
+2. **The True Bottleneck is Adduct Attribution:** The primary factor limiting candidate retrieval recall is precursor ionization adduct ambiguity (e.g. $[M+\text{Na}]^+$, $[M+\text{K}]^+$, $[M+\text{NH}_4]^+$, in-source water loss) rather than missing catalog structures. When the precursor adduct is correctly assigned, candidate retrieval recall is **99.64%**.
 
 ---
 

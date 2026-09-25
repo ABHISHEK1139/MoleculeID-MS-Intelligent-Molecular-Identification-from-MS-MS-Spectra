@@ -1,4 +1,4 @@
-# MoleculeID-MS: Intelligent Molecular Identification from Tandem Mass Spectra (LC-MS/MS)
+# Spectra2Mol: AI-Driven Molecular Identification from Tandem Mass Spectra (LC-MS/MS)
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.2+-ee4c2c.svg)](https://pytorch.org/)
@@ -7,7 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Benchmark: CASMI 2026](https://img.shields.io/badge/Benchmark-CASMI%202026-blueviolet.svg)](https://www.kaggle.com/competitions/enveda-CASMI26-molecule-id-mass-spectra)
 
-An end-to-end, high-throughput molecular identification engine for untargeted liquid chromatography-tandem mass spectrometry (LC-MS/MS). **MoleculeID-MS** combines multi-window concentric precursor retrieval, spectral entropy matching, mass-shifted analog propagation, and deep neural fingerprint inference into a continuous physics-grounded evidence fusion framework.
+An end-to-end, high-throughput molecular identification engine for untargeted liquid chromatography-tandem mass spectrometry (LC-MS/MS). **Spectra2Mol** (MoleculeID-MS) combines multi-window concentric precursor retrieval, spectral entropy matching, mass-shifted analog propagation, and deep neural fingerprint inference into a calibrated continuous physics-grounded evidence fusion framework.
 
 ---
 
